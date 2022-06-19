@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "baseUrl": "./",
+        "outDir": "./build",
+        "sourceMap": false,
+        "declaration": true,
+        "module": "commonjs",
+        "moduleResolution": "Node",
+        "resolveJsonModule": true,
+        "emitDecoratorMetadata": false,
+        "experimentalDecorators": false,
+        "importHelpers": true,
+        "target": "esnext",
+        "lib": ["ESNext"],
+        "types": ["node", "jest"]
+    },
+    "exclude": ["*/**/*.test.ts","build","node_modules"]
+}
