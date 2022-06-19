@@ -4,13 +4,17 @@ import IRelation from './relations/IRelation';
 export default class ModelCollection {
     private models: BaseModel[] = [];
     private index = 0;
-    private modelIdHash:{[key:string|number]:BaseModel} = {};
+    private modelIdHash: Map<string|number, BaseModel[]> = new Map;
 
     public add(model:BaseModel) {
         this.models.push(model);
-        if(!(model.getColumn(model.getPrimaryKey()) in this.modelIdHash)) {
-            this.modelIdHash[model.getColumn(model.getPrimaryKey())] = model;
+        const modelId = model.getColumn(model.getPrimaryKey());
+        let modelMapArr = this.modelIdHash.get(modelId) 
+        if(!modelMapArr) {
+            modelMapArr = [];
+            this.modelIdHash.set(modelId, modelMapArr);
         }
+        modelMapArr.push(model);
     }
 
     public getModels(): BaseModel[] {
@@ -18,10 +22,7 @@ export default class ModelCollection {
     }
 
     public find(id:string|number) {
-        if(id in this.modelIdHash) {
-            return this.modelIdHash[id];
-        }
-        return null;
+        return this.modelIdHash.get(id);
     }
 
     public first(): BaseModel | null {
@@ -73,69 +74,111 @@ export default class ModelCollection {
         });
     }
 
+    private getRelationName(relationKey:string):[string[], string|undefined] {
+        const relationNames = relationKey.split(".");
+        const relationName = relationNames.shift();
+        return [relationNames, relationName];
+    }
+
+    private getIdsToLoadAndNextLoadCollection(relationName:string):[(string | number)[], ModelCollection] {
+        const idsToLoad: (string | number)[] = [];
+        const nextLoadModelCollection = new ModelCollection();
+
+        this.models.forEach(model=>{
+            if(!model.hasRelation(relationName)) {
+                idsToLoad.push(model.getColumn(model.getPrimaryKey())); 
+            } else {
+                const existingRelation = model.getRelation(relationName);
+                if(existingRelation instanceof ModelCollection) {
+                    existingRelation.getModels().forEach((model)=>{
+                        nextLoadModelCollection.add(model);
+                    });
+                } else if(existingRelation !== null) {
+                    nextLoadModelCollection.add(existingRelation);
+                }
+            }
+        });
+
+        return [idsToLoad, nextLoadModelCollection];
+    }
+
+    private async loadRelation(relationName:string, relation:IRelation, idsToLoad:(string | number)[]) {
+        const nextModelCollection = new ModelCollection();
+        const results = await relation.getResults(idsToLoad);
+        const noResults = Array.from(this.modelIdHash.keys()).filter((value)=>{
+            return !(value in results);
+        });
+        noResults.forEach((id)=>{
+            this.modelIdHash.get(id)?.forEach(model=>{
+                if(relation.returnsMany) {
+                    model.setRelation(relationName, new ModelCollection);
+                } else {
+                    model.setRelation(relationName, null);
+                }                
+            });
+        });
+        for(const modelID in results) {
+            const relatedModels = results[modelID as keyof typeof results];
+            const firstModel = this.first();
+            let actualID: string | number = modelID;
+            if(firstModel && typeof firstModel.getColumn(firstModel.getPrimaryKey()) === "number") {
+                actualID = parseInt(actualID);
+            }
+            if(relation.returnsMany) { 
+                this.modelIdHash.get(actualID)?.forEach(model=>{
+                    model.setRelation(relationName,relatedModels);
+                });
+            } else {
+                const relatedModel = relatedModels.first();
+                this.modelIdHash.get(actualID)?.forEach(model=>{
+                    model.setRelation(relationName,relatedModel);
+                });                                          
+            }
+            relatedModels.getModels().forEach(model=>{
+                nextModelCollection.add(model);
+            });
+        }
+        return nextModelCollection;
+    }
+
     private eagerLoadLevel(relationKey:string,func: ((q:ModelDB)=>ModelDB) | null):Promise<void> {
         const model = this.first();
-        return new Promise((resolve,reject)=>{
+        
+        return new Promise(async (resolve,reject)=>{
             if(!model) return resolve();
-            const relationNames = relationKey.split(".");
-            const relationName = relationNames.shift();
+            
+            const [relationNames, relationName] = this.getRelationName(relationKey);
+
             if(!relationName) return reject();
             if(!(relationName in model)) return reject();
+
             const relationFunc = model[(relationName as keyof typeof model)] as ()=>IRelation;
             
             const relation:IRelation = relationFunc.call(model);
+
             if(relationNames.length == 0 && func !== null) {
                 func(relation.getQuery(false));
             }
-            const idsToLoad: (string | number)[] = [];
-            
-            const nextLoadModelCollection = new ModelCollection();
-            this.models.forEach(model=>{
-                if(!relationName) return;
-                if(!model.hasRelation(relationName)) {
-                    idsToLoad.push(model.getColumn(model.getPrimaryKey())); 
-                } else {
-                    const existingRelation = model.getRelation(relationName);
-                    if(existingRelation instanceof ModelCollection) {
-                        existingRelation.getModels().forEach((model)=>{
-                            nextLoadModelCollection.add(model);
-                        });
-                    } else if(existingRelation !== null) {
-                        nextLoadModelCollection.add(existingRelation);
-                    }
-                }
-            });
-            if(idsToLoad.length > 0) {
-                relation.getResults(idsToLoad).then(results=>{
-                    if(!relationName) return resolve();
-                    for(const modelID in results) {
-                        const relatedModels = results[modelID as keyof typeof results];
-                        if(relation.returnsMany) {
-                            this.modelIdHash[modelID].setRelation(relationName,relatedModels);
-                        } else {
-                            const relatedModel = relatedModels.first();
 
-                            if(relatedModel) {
-                                this.modelIdHash[modelID].setRelation(relationName,relatedModel);
-                            } else {
-                                this.modelIdHash[modelID].setRelation(relationName,null);
-                            }                            
-                        }
-                        relatedModels.getModels().forEach(model=>{
-                            nextLoadModelCollection.add(model);
-                        });
-                    }
-                    if(relationNames.length > 0) {
-                        const nextLoad = new Map([
-                            [relationNames.join("."), func]
-                        ]);
-                        nextLoadModelCollection.eagerLoad(nextLoad).then(()=>{
-                            resolve()
-                        });
-                    } else {
-                        resolve();
-                    }
-                });
+            const [idsToLoad, nextLoadModelCollection] = this.getIdsToLoadAndNextLoadCollection(relationName);
+
+            if(idsToLoad.length > 0) {
+                const newModels = await this.loadRelation(relationName, relation, idsToLoad);
+                
+                for(const model of newModels) {
+                    nextLoadModelCollection.add(model);
+                }
+
+                if(relationNames.length > 0) {
+                    const nextLoad = new Map([
+                        [relationNames.join("."), func]
+                    ]);
+                    nextLoadModelCollection.eagerLoad(nextLoad).then(()=>{
+                        resolve()
+                    });
+                } else {
+                    resolve();
+                }
             } else {
                 if(relationNames.length > 0) {
                     const nextLoad = new Map([
@@ -169,7 +212,9 @@ export default class ModelCollection {
                     resolve();
                     return;
                 }
+
                 var key = relationKeys.shift();
+                
                 if(key) {
                     const relation = relations.get(key);
                     if(typeof relation !== "undefined") {
