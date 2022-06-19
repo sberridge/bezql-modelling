@@ -102,21 +102,8 @@ export default class ModelCollection {
         return [idsToLoad, nextLoadModelCollection];
     }
 
-    private async loadRelation(relationName:string, relation:IRelation, idsToLoad:(string | number)[]) {
+    private setEagerLoadedRelations(results:{[key:string]:ModelCollection}, relationName:string, useCollection:boolean) {
         const nextModelCollection = new ModelCollection();
-        const results = await relation.getResults(idsToLoad);
-        const noResults = Array.from(this.modelIdHash.keys()).filter((value)=>{
-            return !(value in results);
-        });
-        noResults.forEach((id)=>{
-            this.modelIdHash.get(id)?.forEach(model=>{
-                if(relation.returnsMany) {
-                    model.setRelation(relationName, new ModelCollection);
-                } else {
-                    model.setRelation(relationName, null);
-                }                
-            });
-        });
         for(const modelID in results) {
             const relatedModels = results[modelID as keyof typeof results];
             const firstModel = this.first();
@@ -124,7 +111,7 @@ export default class ModelCollection {
             if(firstModel && typeof firstModel.getColumn(firstModel.getPrimaryKey()) === "number") {
                 actualID = parseInt(actualID);
             }
-            if(relation.returnsMany) { 
+            if(useCollection) { 
                 this.modelIdHash.get(actualID)?.forEach(model=>{
                     model.setRelation(relationName,relatedModels);
                 });
@@ -138,6 +125,26 @@ export default class ModelCollection {
                 nextModelCollection.add(model);
             });
         }
+        return nextModelCollection;
+    }
+    private async loadEagerLoadedRelation(relationName:string, relation:IRelation, idsToLoad:(string | number)[]) {
+        
+        const results = await relation.getResults(idsToLoad);
+        const noResults = Array.from(this.modelIdHash.keys()).filter((value)=>{
+            return !(value in results);
+        });
+        noResults.forEach((id)=>{
+            this.modelIdHash.get(id)?.forEach(model=>{
+                if(relation.returnsMany) {
+                    model.setRelation(relationName, new ModelCollection);
+                } else {
+                    model.setRelation(relationName, null);
+                }                
+            });
+        });
+
+        const nextModelCollection = this.setEagerLoadedRelations(results, relationName, relation.returnsMany)
+        
         return nextModelCollection;
     }
 
@@ -163,7 +170,7 @@ export default class ModelCollection {
             const [idsToLoad, nextLoadModelCollection] = this.getIdsToLoadAndNextLoadCollection(relationName);
 
             if(idsToLoad.length > 0) {
-                const newModels = await this.loadRelation(relationName, relation, idsToLoad);
+                const newModels = await this.loadEagerLoadedRelation(relationName, relation, idsToLoad);
                 
                 for(const model of newModels) {
                     nextLoadModelCollection.add(model);
