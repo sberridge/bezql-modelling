@@ -459,14 +459,13 @@ await users.eagerLoad(new Map([
 
 for(const user of users) {
     const hobbies = user.getRelation("hobbies");
+    const hobbyType = hobbies.first().getRelation("type");
     const city = user.getRelation("city");
     const cityParties = city.getRelation("parties");
 }
 
+users.first().toJSON();
 /**
- * {
- *      "success": true,
- *      "rows": [
  *          {
  *              "id": 1,
  *              "name": "Bob",
@@ -474,7 +473,11 @@ for(const user of users) {
  *                  {
  *                      "id": 1,
  *                      "hobby": "Origami",
- *                      "favourite": 1
+ *                      "favourite": 1,
+ *                      "type": {
+ *                          "id": 1,
+ *                          "type": "craft"
+ *                      }
  *                  }
  *              ],
  *              "city": {
@@ -488,11 +491,7 @@ for(const user of users) {
  *                  ]
  *              }
  *          }
- *      ],
- *      "total_rows": 100
- * }
  */
-res.json(ResponseGenerator.success(users.toJSON(), totalRows));
 ```
 
 You can also eagerload relationships on a single model.
