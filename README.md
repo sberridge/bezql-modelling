@@ -381,7 +381,11 @@ public events() {
 It will then be possible to access these fields from the results of the relationship.
 
 ```typescript
-const user = <User>await (new User()).find(1);
+const user = await (new User()).find(1).catch(error=>{
+    //log error
+}) as User | null;
+
+if(!user) return;
 
 const userEvents:ModelCollection = await user.events().getResults();
 
@@ -444,6 +448,7 @@ await users.eagerLoad(new Map([
         query.where("favourite", "=", 1, true);
         return query;
     }],
+    ["hobbies.type", null],
     ["city.parties", (query)=>{
         query.where("parties.date", ">", "2022-01-01", true);
         return query;
