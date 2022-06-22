@@ -1,3 +1,4 @@
+import SQLResult from "bezql/lib/classes/SQLResult"
 import WeightedCondition from "bezql/lib/classes/WeightedCondition"
 import iPagination from "bezql/lib/interfaces/iPagination"
 import pSQL from "bezql/lib/interfaces/pSQL"
@@ -41,6 +42,11 @@ interface mSQL {
     and(): mSQL
     openBracket(): mSQL
     closeBracket(): mSQL
+
+    update(columnValues: { [key: string]: any; }, escape: boolean): mSQL
+    save(): Promise<SQLResult>
+
+    delete(): Promise<SQLResult>
 }
 
 export default mSQL;
