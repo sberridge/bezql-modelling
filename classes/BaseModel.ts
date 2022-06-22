@@ -117,19 +117,19 @@ export default class BaseModel {
         return this.columns;
     }
 
-    public updateColumn(column: string, value: any) {
+    public setColumn(column: string, value: any) {
         if(column in this.original) {
             this.changed[column] = value;
         }
     }
     
-    public updateColumns(values: {[key:string]:any}) {
+    public setColumns(values: {[key:string]:any}) {
         for(var key in values) {
-            this.updateColumn(key,values[key]);
+            this.setColumn(key,values[key]);
         }
     }
 
-    public getColumns() : {[key:string]:any} {
+    public getData() : {[key:string]:any} {
         var values:{[key:string]:any} = {};
         for(var key in this.original) {
             if(key in this.changed) {
@@ -150,6 +150,10 @@ export default class BaseModel {
         return null;
     }
     
+    public setAdditionalColumn(field:string,value:any) {
+        this.additionalColumns[field] = value;
+    }
+
     public getAdditionalColumns() : object {
         return this.additionalColumns;
     }
@@ -162,7 +166,7 @@ export default class BaseModel {
     }
 
     public toJSON() {
-        var base = this.getColumns();
+        var base = this.getData();
         for(let key in this.additionalColumns) {
             base[key] = this.additionalColumns[key];
         }
@@ -271,9 +275,7 @@ export default class BaseModel {
         return relationName in this.relations;
     }
 
-    public addAdditionalColumn(field:string,value:any) {
-        this.additionalColumns[field] = value;
-    }
+    
 
     public eagerLoad(relations:Map<string, ((q: ModelDB)=>ModelDB) | null>) {
         var collection = new ModelCollection;

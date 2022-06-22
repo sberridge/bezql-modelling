@@ -35,7 +35,7 @@ export default class ModelCollection {
     public toList(): {[key:string]:any}[] {
         var returnArr: {[key:string]:any}[] = [];
         this.models.forEach(element => {
-            returnArr.push(element.getColumns())
+            returnArr.push(element.getData())
         });
         return returnArr;
     }

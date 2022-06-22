@@ -47,7 +47,7 @@ export default class ModelDB implements mSQL {
         }
         this.additionalColumns.forEach((field)=>{
             if(field in result) {
-                model.addAdditionalColumn(field,result[field]);
+                model.setAdditionalColumn(field,result[field]);
             }                        
         });
         model.setVisibleColumns(Object.keys(result));

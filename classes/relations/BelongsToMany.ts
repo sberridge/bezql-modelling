@@ -82,7 +82,7 @@ export default class BelongsToMany implements IRelation {
                 if(this.linkColumns && this.linkColumns.length > 0) {
                     this.linkColumns.forEach((col)=>{
                         if(col in result) {
-                            resModel.addAdditionalColumn(col, result[col]);
+                            resModel.setAdditionalColumn(col, result[col]);
                         }
                     });
                 }
@@ -138,7 +138,7 @@ export default class BelongsToMany implements IRelation {
             if(this.linkColumns && this.linkColumns.length > 0) {
                 this.linkColumns.forEach((col)=>{
                     if(col in result) {
-                        resModel.addAdditionalColumn(col, result[col]);
+                        resModel.setAdditionalColumn(col, result[col]);
                     }
                 });
             }                        

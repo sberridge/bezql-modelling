@@ -76,7 +76,7 @@ if(!user) {
     //record not found
 }
 
-const fieldValues = user.getColumns();
+const fieldValues = user.getData();
 {
     "id": 1,
     "name": "Jimmy",
@@ -124,13 +124,13 @@ New records can be created by simply creating a new instance of the model class,
 const user = new User();
 
 //set multiple fields
-user.updateColumns({
+user.setColumns({
     "name": "Jim",
     "active": 1
 });
 
 //set individual field
-user.updateColumn("name", "jim");
+user.setColumn("name", "jim");
 
 const saved = await user.save();
 if(saved) {
@@ -147,7 +147,7 @@ const user = (new User()).find(1).catch(error=>{
     //log error
 });
 
-user.updateColumns({
+user.setColumns({
     "name": "James"
 });
 
