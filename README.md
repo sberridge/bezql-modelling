@@ -154,6 +154,16 @@ user.updateColumns({
 const saved = await user.save();
 ```
 
+You can also update multiple records using the all method, which will use the underlying bezql package to execute and return an update result.
+
+```typescript
+const updateResult = await (new User()).all().update({
+                            "active": 0
+                        }, true)
+                        .where("date_created", ">", "2022-06-22", true)
+                        .save();
+```
+
 ### Deleting
 
 Much like updating records, deleting involves first fetching a record and then calling delete.
@@ -164,6 +174,14 @@ const user = (new User()).find(1).catch(error=>{
 });
 
 const deleted = await user.delete();
+```
+
+You can also delete multiple records using the all method, which will use the underlying bezql package to execute and return a delete result.
+
+```typescript
+const deleteResult = await (new User()).all()
+                        .where("date_created", ">", "2022-06-22", true)
+                        .delete();
 ```
 
 ## Relationship Mapping
