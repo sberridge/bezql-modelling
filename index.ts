@@ -1,8 +1,8 @@
 import * as bezql from "bezql";
-import ConnectionConfig from "bezql/lib/types/ConnectionConfig";
-import CRUDOperation from "bezql/lib/types/CRUDOperation";
-import Event from "bezql/lib/types/Event";
-import SupportedDatabase from "bezql/lib/types/SupportedDatabase";
+import ConnectionConfig from "./types/ConnectionConfig";
+import CRUDOperation from "./types/CRUDOperation";
+import Event from "./types/Event";
+import SupportedDatabase from "./types/SupportedDatabase";
 
 export const addConfig = (name:string, config:ConnectionConfig) => {
     bezql.addConfig(name, config);

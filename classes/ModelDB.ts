@@ -2,6 +2,7 @@ import * as bezql from "bezql";
 import QueryConstraints from "bezql/lib/classes/QueryConstraints";
 import SQLResult from "bezql/lib/classes/SQLResult";
 import WeightedCondition from "bezql/lib/classes/WeightedCondition";
+import iPagination from "bezql/lib/interfaces/iPagination";
 import pSQL from "bezql/lib/interfaces/pSQL";
 import Comparator from "bezql/lib/types/Comparator";
 import mSQL from "./../interfaces/mSQL";
@@ -22,6 +23,18 @@ export default class ModelDB implements mSQL {
         }
         this.configName = configName;
         this.dbHandler = db as ModelDB;
+    }
+
+    public beginTransaction(): Promise<boolean> {
+        return this.dbHandler.beginTransaction();
+    }
+
+    public commit(): Promise<boolean> {
+        return this.dbHandler.commit();
+    }
+
+    public rollback(): Promise<boolean> {
+        return this.dbHandler.rollback();
     }
 
     private resultToModel(result:{[key:string]:any}):BaseModel | null {
@@ -161,6 +174,14 @@ export default class ModelDB implements mSQL {
     public group(groupFields: string[]): ModelDB {
         this.dbHandler.group(groupFields);
         return this;
+    }
+
+    public count(): Promise<number> {
+        return this.dbHandler.count();
+    }
+
+    public paginate(perPage:number, page:number): Promise<iPagination> {
+        return this.dbHandler.paginate(perPage, page);        
     }
 
     public where(field: string, comparator: Comparator, value: any, escape: boolean): ModelDB {

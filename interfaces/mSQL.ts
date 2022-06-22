@@ -1,4 +1,5 @@
 import WeightedCondition from "bezql/lib/classes/WeightedCondition"
+import iPagination from "bezql/lib/interfaces/iPagination"
 import pSQL from "bezql/lib/interfaces/pSQL"
 import Comparator from "bezql/lib/types/Comparator"
 import ModelCollection from "./../classes/ModelCollection"
@@ -14,6 +15,10 @@ interface mSQL {
     limit(limitAmount: number): mSQL
     offset(offsetAmount: number): mSQL
     order(field: string, direction: "ASC" | "DESC"): mSQL
+
+    count(): Promise<number>
+    paginate(perPage:number, page:number): Promise<iPagination>
+
     where(field : string, comparator : Comparator, value : any, escape : boolean) : mSQL
         
     whereNull(field : string) : mSQL
