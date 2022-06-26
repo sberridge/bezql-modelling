@@ -1,6 +1,6 @@
 import BaseModel from './../BaseModel';
 import ModelCollection from './../ModelCollection';
-import SQLResult from 'bezql/lib/classes/SQLResult';
+import SQLResult from '../SQLResult';
 import ModelDB from './../ModelDB';
 
 export default interface IRelation {

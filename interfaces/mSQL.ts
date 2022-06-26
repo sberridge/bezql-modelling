@@ -1,8 +1,8 @@
-import SQLResult from "bezql/lib/classes/SQLResult"
-import WeightedCondition from "bezql/lib/classes/WeightedCondition"
-import iPagination from "bezql/lib/interfaces/iPagination"
-import pSQL from "bezql/lib/interfaces/pSQL"
-import Comparator from "bezql/lib/types/Comparator"
+import SQLResult from "./../classes/SQLResult"
+import WeightedCondition from "./../classes/WeightedCondition"
+import iPagination from "./iPagination"
+import pSQL from "./pSQL"
+import Comparator from "./../types/Comparator"
 import ModelCollection from "./../classes/ModelCollection"
 
 interface mSQL {

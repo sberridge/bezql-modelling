@@ -1,10 +1,10 @@
 import * as bezql from "bezql";
-import QueryConstraints from "bezql/lib/classes/QueryConstraints";
-import SQLResult from "bezql/lib/classes/SQLResult";
-import WeightedCondition from "bezql/lib/classes/WeightedCondition";
-import iPagination from "bezql/lib/interfaces/iPagination";
-import pSQL from "bezql/lib/interfaces/pSQL";
-import Comparator from "bezql/lib/types/Comparator";
+import QueryConstraints from "./QueryConstraints";
+import SQLResult from "./SQLResult";
+import WeightedCondition from "./WeightedCondition";
+import iPagination from "./../interfaces/iPagination";
+import pSQL from "./../interfaces/pSQL";
+import Comparator from "./../types/Comparator";
 import mSQL from "./../interfaces/mSQL";
 import BaseModel from "./BaseModel";
 import ModelCollection from "./ModelCollection";
@@ -35,6 +35,10 @@ export default class ModelDB implements mSQL {
 
     public rollback(): Promise<boolean> {
         return this.dbHandler.rollback();
+    }
+
+    public raw(query: string, params: any): Promise<SQLResult> {
+        return this.raw(query, params);
     }
 
     private resultToModel(result:{[key:string]:any}):BaseModel | null {

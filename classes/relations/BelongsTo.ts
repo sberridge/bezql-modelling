@@ -1,8 +1,8 @@
 import IRelation from './IRelation';
 import BaseModel from '../BaseModel';
-import QueryConstraints from 'bezql/lib/classes/QueryConstraints';
+import QueryConstraints from './../QueryConstraints';
 import ModelCollection from '../ModelCollection';
-import SQLResult from 'bezql/lib/classes/SQLResult';
+import SQLResult from './../SQLResult';
 import ModelDB from './../ModelDB';
 
 export default class BelongsTo implements IRelation {
