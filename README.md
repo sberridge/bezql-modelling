@@ -42,7 +42,7 @@ bezql_modelling.removeConfig("test");
 Models are classes which extend from the bezql_modelling BaseModel class.
 
 ```typescript
-import BaseModel from "bezql-modelling/classes/BaseModel";
+import { BaseModel } from "bezql-modelling";
 
 class User extends BaseModel {
 

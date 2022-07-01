@@ -19,3 +19,5 @@ export const addEventListener = (configName: string, when: "before" | "after", e
 export const addReservedWord = (dbType: SupportedDatabase, word: string) => {
     bezql.addReservedWord(dbType, word);
 }
+
+export { default as BaseModel } from './classes/BaseModel';
