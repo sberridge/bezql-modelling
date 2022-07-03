@@ -38,7 +38,7 @@ export default class ModelDB implements mSQL {
     }
 
     public raw(query: string, params: any): Promise<SQLResult> {
-        return this.raw(query, params);
+        return this.dbHandler.raw(query, params);
     }
 
     private resultToModel(result:{[key:string]:any}):BaseModel | null {
