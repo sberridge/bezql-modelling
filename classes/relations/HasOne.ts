@@ -79,7 +79,7 @@ export default class HasOne implements IRelation {
 
     public getResult(ids: any[]): Promise<SQLResult>
     public getResult(): Promise<BaseModel>
-    public getResult(ids: any = null): Promise<any> {
+    public getResult(ids: any[] | null = null): Promise<any> {
         return new Promise(async (resolve,reject)=>{
             if(ids !== null) {
                 resolve(await this.getFilteredResult(ids));
@@ -122,7 +122,7 @@ export default class HasOne implements IRelation {
 
     public getResults(ids: any[]): Promise<{[key:string]:ModelCollection}>
     public getResults(): Promise<ModelCollection>
-    public getResults(ids: any = null): Promise<any> {
+    public getResults(ids: any[] | null = null): Promise<any> {
         return new Promise(async (resolve,reject)=>{
             var daQuery = this.query;
             if(ids !== null) {
