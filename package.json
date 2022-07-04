@@ -9,7 +9,7 @@
     "author": "Steven Berridge",
     "license": "MIT",
     "dependencies": {
-        "bezql": "^1.5.1"
+        "bezql": "^1.7.1"
     },
     "devDependencies": {
         "@types/jest": "^28.1.1",

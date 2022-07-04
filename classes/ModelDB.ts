@@ -10,7 +10,7 @@ import BaseModel from "./BaseModel";
 import ModelCollection from "./ModelCollection";
 
 export default class ModelDB implements mSQL {
-    private dbHandler:ModelDB;
+    private dbHandler:pSQL;
     private modelFunc?: new (...args: any[]) => BaseModel;
     private configName:string;
     private selectColumns: string[] = ["*"];
@@ -22,7 +22,7 @@ export default class ModelDB implements mSQL {
             throw "Database not found";
         }
         this.configName = configName;
-        this.dbHandler = db as ModelDB;
+        this.dbHandler = db;
     }
 
     public beginTransaction(): Promise<boolean> {
