@@ -15,5 +15,5 @@
         "lib": ["ESNext"],
         "types": ["node", "jest"]
     },
-    "exclude": ["*/**/*.test.ts","build","node_modules"]
+    "exclude": ["*/**/__tests__/*","__tests__/*", "build","node_modules"]
 }
