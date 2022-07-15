@@ -10,10 +10,10 @@ export default interface IRelation {
     getQuery(applyWhere:boolean): ModelDB
     getQuery(): ModelDB
 
-    getResult(ids: any[]): Promise<SQLResult>
+    getResult<TModel extends BaseModel>(ids: any[]): Promise<SQLResult<TModel>>
     getResult(): Promise<BaseModel>
     
-    getResults(ids: any[]): Promise<{[key:string]:ModelCollection}>
-    getResults(): Promise<ModelCollection>
+    getResults<TModel extends BaseModel>(ids: any[]): Promise<{[key:string]:ModelCollection<TModel>}>
+    getResults<TModel extends BaseModel>(): Promise<ModelCollection<TModel>>
 }
     

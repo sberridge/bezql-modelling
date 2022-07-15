@@ -69,7 +69,11 @@ export default class BaseModel {
         return da;
     }
 
-    public async find(id: any) : Promise<BaseModel | null> {
+    private toBaseModel():BaseModel {
+        return this;
+    }
+
+    public async find<TModel extends BaseModel>(id: any) : Promise<TModel | null> {
         const da = this.createDA();
         da.where(this.primaryKey,"=",id,true);
         const result = await da.fetch().catch(e=>{
@@ -78,7 +82,8 @@ export default class BaseModel {
         if(result.rows.length > 0) {
             this.original = result.rows[0];
             this.isNew = false;
-            return this;
+            const model = this.toBaseModel();
+            return model as TModel;
         } else {
             return null;
         }             
@@ -244,20 +249,20 @@ export default class BaseModel {
         return result.rows_affected > 0;
     }
 
-    public belongsTo(modelFunc: new (...args: any[]) => BaseModel, foreignKey: string) {
-        return new BelongsTo(this,modelFunc,foreignKey);
+    public belongsTo<TModel extends BaseModel = BaseModel>(modelFunc: new (...args: any[]) => TModel, foreignKey: string) {
+        return new BelongsTo<TModel>(this,modelFunc,foreignKey);
     }
     
-    public hasOne(modelFunc: new (...args: any[]) => BaseModel, foreignKey: string) {
-        return new HasOne(this,modelFunc,foreignKey);
+    public hasOne<TModel extends BaseModel = BaseModel>(modelFunc: new (...args: any[]) => TModel, foreignKey: string) {
+        return new HasOne<TModel>(this,modelFunc,foreignKey);
     }
     
-    public hasMany(modelFunc: new (...args: any[]) => BaseModel, foreignKey: string) {
-        return new HasMany(this,modelFunc,foreignKey);
+    public hasMany<TModel extends BaseModel = BaseModel>(modelFunc: new (...args: any[]) => TModel, foreignKey: string) {
+        return new HasMany<TModel>(this,modelFunc,foreignKey);
     }
     
-    public belongsToMany(modelFunc: new (...args: any[]) => BaseModel, linkTable: string, primaryForeignKey: string, secondaryForeignKey: string) {
-        return new BelongsToMany(this,modelFunc,linkTable,primaryForeignKey,secondaryForeignKey);
+    public belongsToMany<TModel extends BaseModel = BaseModel>(modelFunc: new (...args: any[]) => TModel, linkTable: string, primaryForeignKey: string, secondaryForeignKey: string) {
+        return new BelongsToMany<TModel>(this,modelFunc,linkTable,primaryForeignKey,secondaryForeignKey);
     }
 
     public setRelation(relationName: string, models: ModelCollection | BaseModel | null) {
@@ -265,9 +270,15 @@ export default class BaseModel {
             this.relations[relationName] = models;
         }
     }
-    public getRelation(relationName: string) {
+    public getRelation<TModel extends BaseModel = BaseModel>(relationName: string) {
         if(relationName in this.relations) {
-            return this.relations[relationName];
+            const relation = this.relations[relationName];
+            if (relation instanceof BaseModel) {
+                return relation as TModel;
+            } else if (relation instanceof ModelCollection) {
+                return relation as ModelCollection<TModel>;
+            }
+            return null;
         }
         return null;
     }

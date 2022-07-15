@@ -4,6 +4,7 @@ import iPagination from "./iPagination"
 import pSQL from "./pSQL"
 import Comparator from "./../types/Comparator"
 import ModelCollection from "./../classes/ModelCollection"
+import BaseModel from "./../classes/BaseModel"
 
 interface mSQL {
     newQuery():pSQL
@@ -11,8 +12,8 @@ interface mSQL {
     removeCol(column:string): mSQL
     removeCols(columns:string[]) : mSQL
     keepCols(columns:string[]) : mSQL
-    fetchModels(): Promise<ModelCollection>
-    streamModels(num: number, callback: (results: ModelCollection)=>Promise<boolean>): Promise<void>
+    fetchModels<TModel extends BaseModel>(): Promise<ModelCollection<TModel>>
+    streamModels<TModel extends BaseModel>(num: number, callback: (results: ModelCollection)=>Promise<boolean>): Promise<void>
     limit(limitAmount: number): mSQL
     offset(offsetAmount: number): mSQL
     order(field: string, direction: "ASC" | "DESC"): mSQL
@@ -44,9 +45,9 @@ interface mSQL {
     closeBracket(): mSQL
 
     update(columnValues: { [key: string]: any; }, escape: boolean): mSQL
-    save(): Promise<SQLResult>
+    save(): Promise<SQLResult<any>>
 
-    delete(): Promise<SQLResult>
+    delete(): Promise<SQLResult<any>>
 }
 
 export default mSQL;

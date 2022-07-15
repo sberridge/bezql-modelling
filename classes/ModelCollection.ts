@@ -1,12 +1,12 @@
 import ModelDB from './ModelDB';
 import BaseModel from './BaseModel'
 import IRelation from './relations/IRelation';
-export default class ModelCollection {
-    private models: BaseModel[] = [];
+export default class ModelCollection<TModel extends BaseModel = BaseModel> {
+    private models: TModel[] = [];
     private index = 0;
-    private modelIdHash: Map<string|number, BaseModel[]> = new Map;
+    private modelIdHash: Map<string|number, TModel[]> = new Map;
 
-    public add(model:BaseModel) {
+    public add(model:TModel) {
         this.models.push(model);
         const modelId = model.getColumn(model.getPrimaryKey());
         let modelMapArr = this.modelIdHash.get(modelId) 
@@ -17,7 +17,7 @@ export default class ModelCollection {
         modelMapArr.push(model);
     }
 
-    public getModels(): BaseModel[] {
+    public getModels(): TModel[] {
         return this.models;
     }
 
@@ -25,7 +25,7 @@ export default class ModelCollection {
         return this.modelIdHash.get(id);
     }
 
-    public first(): BaseModel | null {
+    public first(): TModel | null {
         if(this.models.length > 0) {
             return this.models[0];
         }
@@ -159,7 +159,7 @@ export default class ModelCollection {
             if(!relationName) return reject();
             if(!(relationName in model)) return reject();
 
-            const relationFunc = model[(relationName as keyof typeof model)] as ()=>IRelation;
+            const relationFunc = model[(relationName as keyof BaseModel)] as ()=>IRelation;
             
             const relation:IRelation = relationFunc.call(model);
 

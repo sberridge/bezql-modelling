@@ -37,11 +37,11 @@ export default class ModelDB implements mSQL {
         return this.dbHandler.rollback();
     }
 
-    public raw(query: string, params: any): Promise<SQLResult> {
-        return this.dbHandler.raw(query, params);
+    public raw<TResult = any>(query: string, params: any): Promise<SQLResult<TResult>> {
+        return this.dbHandler.raw<TResult>(query, params);
     }
 
-    private resultToModel(result:{[key:string]:any}):BaseModel | null {
+    private resultToModel<TModel extends BaseModel>(result:{[key:string]:any}):TModel | null {
         if(!this.modelFunc) {
             return null;
         }
@@ -56,7 +56,7 @@ export default class ModelDB implements mSQL {
         });
         model.setVisibleColumns(Object.keys(result));
         model.loadData(result);
-        return model;
+        return model as TModel;
     }
 
     public toModel(model: new (...args: any[]) => BaseModel) : ModelDB {
@@ -121,18 +121,18 @@ export default class ModelDB implements mSQL {
         return this;
     }
 
-    public fetch(): Promise<SQLResult> {        
+    public fetch<TResult = any>(): Promise<SQLResult<TResult>> {
         this.dbHandler.cols(this.selectColumns);
-        return this.dbHandler.fetch();
+        return this.dbHandler.fetch<TResult>();
     }
 
-    public async fetchModels(): Promise<ModelCollection> {
+    public async fetchModels<TModel extends BaseModel = BaseModel>(): Promise<ModelCollection<TModel>> {
         const results = await this.fetch().catch(e=>{
             throw e;
         });
-        const collection = new ModelCollection;
+        const collection = new ModelCollection<TModel>;
         results.rows.forEach(row=>{
-            const model = this.resultToModel(row);
+            const model = this.resultToModel<TModel>(row);
             if(model) {
                 collection.add(model);
             }
@@ -145,11 +145,11 @@ export default class ModelDB implements mSQL {
         return this.dbHandler.stream(num, callback);
     }
 
-    public async streamModels(num: number, callback: (results: ModelCollection)=>Promise<boolean>): Promise<void> {
+    public async streamModels<TModel extends BaseModel>(num: number, callback: (results: ModelCollection<TModel>)=>Promise<boolean>): Promise<void> {
         await this.stream(num, async (results) => {
-            var modelCollection = new ModelCollection;
+            var modelCollection = new ModelCollection<TModel>;
             results.forEach((result)=>{
-                var model = this.resultToModel(result);
+                var model = this.resultToModel<TModel>(result);
                 if(model) {
                     modelCollection.add(model);
                 }                    
@@ -316,11 +316,11 @@ export default class ModelDB implements mSQL {
         return this;
     }
 
-    public save(): Promise<SQLResult> {
+    public save(): Promise<SQLResult<any>> {
         return this.dbHandler.save();
     }
 
-    public delete(): Promise<SQLResult> {
+    public delete(): Promise<SQLResult<any>> {
         return this.dbHandler.delete();
     }
 

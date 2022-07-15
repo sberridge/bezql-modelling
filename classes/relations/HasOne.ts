@@ -5,7 +5,7 @@ import ModelCollection from '../ModelCollection';
 import SQLResult from '../SQLResult';
 import ModelDB from './../ModelDB';
 
-export default class HasOne implements IRelation {
+export default class HasOne<TModel extends BaseModel = BaseModel> implements IRelation {
     private primaryModel: BaseModel;
     private foreignModel: BaseModel;
     private foreignKey: string;
@@ -63,7 +63,7 @@ export default class HasOne implements IRelation {
                 }
                 resModel.loadData(result);
                 resModel.setVisibleColumns(Object.keys(result));
-                groupedResults[result["__table_" + this.primaryModel.getTable() + "__key"]] = resModel;
+                groupedResults[result["__table_" + this.primaryModel.getTable() + "__key"]] = resModel as TModel;
             }
         });
         return results;
@@ -72,12 +72,12 @@ export default class HasOne implements IRelation {
     private async getUnfilteredResult() {
         let daQuery = this.query;
         daQuery.where("__primary__." + this.primaryModel.getPrimaryKey(),"=",this.primaryModel.getColumn(this.primaryModel.getPrimaryKey()), true);
-        let results = await daQuery.fetchModels();
+        let results = await daQuery.fetchModels<TModel>();
         var model = results.first();
         return model;            
     }
 
-    public getResult(ids: any[]): Promise<SQLResult>
+    public getResult(ids: any[]): Promise<SQLResult<any>>
     public getResult(): Promise<BaseModel>
     public getResult(ids: any[] | null = null): Promise<any> {
         return new Promise(async (resolve,reject)=>{
@@ -95,11 +95,11 @@ export default class HasOne implements IRelation {
         let daQuery = this.query;
         daQuery.whereIn("__primary__." + this.primaryModel.getPrimaryKey(),ids, true);
         let results = await daQuery.fetch();
-        var groupedResults:{[key:string]:ModelCollection} = {};
+        var groupedResults:{[key:string]:ModelCollection<TModel>} = {};
         var modelConstructor: any = this.foreignModel.constructor;
         results.rows.forEach(result=>{
             if(!(result["__table_" + this.primaryModel.getTable() + "__key"] in groupedResults)) {
-                groupedResults[result["__table_" + this.primaryModel.getTable() + "__key"]] = new ModelCollection;
+                groupedResults[result["__table_" + this.primaryModel.getTable() + "__key"]] = new ModelCollection<TModel>;
             }
             var resModel: BaseModel = new modelConstructor();
             if(!resModel.getSqlConfig()) {
@@ -107,7 +107,7 @@ export default class HasOne implements IRelation {
             }
             resModel.loadData(result);
             resModel.setVisibleColumns(Object.keys(result));
-            groupedResults[result["__table_" + this.primaryModel.getTable() + "__key"]].add(resModel);
+            groupedResults[result["__table_" + this.primaryModel.getTable() + "__key"]].add(resModel as TModel);
         });
 
         return groupedResults;
@@ -116,12 +116,12 @@ export default class HasOne implements IRelation {
     private async getUnfilteredResults() {
         let daQuery = this.query;
         daQuery.where("__primary__." + this.primaryModel.getPrimaryKey(),"=",this.primaryModel.getColumn(this.primaryModel.getPrimaryKey()), true);
-        let results = await daQuery.fetchModels();
+        let results = await daQuery.fetchModels<TModel>();
         return results;
     }
 
-    public getResults(ids: any[]): Promise<{[key:string]:ModelCollection}>
-    public getResults(): Promise<ModelCollection>
+    public getResults(ids: any[]): Promise<{[key:string]:ModelCollection<TModel>}>
+    public getResults(): Promise<ModelCollection<TModel>>
     public getResults(ids: any[] | null = null): Promise<any> {
         return new Promise(async (resolve,reject)=>{
             var daQuery = this.query;
