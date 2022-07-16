@@ -124,7 +124,6 @@ export default class HasOne<TModel extends BaseModel = BaseModel> implements IRe
     public getResults(): Promise<ModelCollection<TModel>>
     public getResults(ids: any[] | null = null): Promise<any> {
         return new Promise(async (resolve,reject)=>{
-            var daQuery = this.query;
             if(ids !== null) {
                 resolve(await this.getFilteredResults(ids));
             } else {
