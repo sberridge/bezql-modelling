@@ -36,6 +36,8 @@ export default class BaseModel {
     protected setIncrementingField(field:string) {
         if(Object.keys(this.original).includes(field)) {
             this.incrementingField = field;
+        } else {
+            throw 'incrementing field not found';
         }
     }
 
