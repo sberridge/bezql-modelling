@@ -131,7 +131,7 @@ export default class ModelDB implements mSQL {
             throw e;
         });
         const collection = new ModelCollection<TModel>;
-        results.rows.forEach(row=>{
+        results.rows.forEach((row: any) => {
             const model = this.resultToModel<TModel>(row);
             if(model) {
                 collection.add(model);
@@ -181,10 +181,12 @@ export default class ModelDB implements mSQL {
     }
 
     public count(): Promise<number> {
+        this.dbHandler.cols(this.selectColumns);
         return this.dbHandler.count();
     }
 
     public paginate(perPage:number, page:number): Promise<iPagination> {
+        this.dbHandler.cols(this.selectColumns);
         return this.dbHandler.paginate(perPage, page);        
     }
 
